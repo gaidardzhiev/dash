@@ -79,8 +79,6 @@ struct parsefile *parsefile = &basepf;	/* current input file */
 int whichprompt;		/* 1 == PS1, 2 == PS2 */
 int stdin_istty = -1;
 
-MKINIT void input_init(void);
-
 STATIC void pushfile(void);
 static void popstring(void);
 static int preadfd(void);
