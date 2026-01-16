@@ -961,13 +961,15 @@ static size_t memtodest(const char *p, size_t len, int flags)
 	if (likely(!(flags & (expq >> 3 | expq >> 4 | expq >> 8) &
 		     (QUOTES_ESC | EXP_MBCHAR)))) {
 		while (len >= 8) {
-			uint64_t x = *(uint64_t *)(p + count);
+			uint64_t x;
+
+			memcpy(&x, p + count, sizeof(x));
 
 			if ((x | (x - 0x0101010101010101)) &
 			    0x8080808080808080)
 				break;
 
-			*(uint64_t *)(q + count) = x;
+			memcpy(q + count, &x, sizeof(x));
 
 			count += 8;
 			len -= 8;
@@ -1335,7 +1337,7 @@ ifsbreakup(char *string, int maxargs, struct arglist *arglist)
 						unsigned char b[8];
 					} x;
 
-					x.qw = *(uint64_t *)p;
+					memcpy(&x.qw, p, sizeof(x.qw));
 
 					if ((x.qw & 0x8080808080808080))
 						break;
