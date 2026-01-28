@@ -40,6 +40,7 @@ fi
 AC_ARG_ENABLE(fnmatch, AS_HELP_STRING(--enable-fnmatch, \
 				      [Use fnmatch(3) from libc]))
 AC_ARG_ENABLE(glob, AS_HELP_STRING(--enable-glob, [Use glob(3) from libc]))
+AC_ARG_ENABLE(tee, AS_HELP_STRING(--disable-tee, [Do not use tee(2)]))
 
 dnl Checks for libraries.
 
@@ -129,6 +130,12 @@ fi
 
 if test "$use_fnmatch" = yes && test "$enable_glob" = yes; then
 	AC_CHECK_FUNCS(glob)
+fi
+
+if test "$enable_tee" != no; then
+	AC_DEFINE([USE_TEE], [1], [Non-zero if tee(2) should be used])
+else
+	AC_DEFINE([USE_TEE], [0], [Non-zero if tee(2) should be used])
 fi
 
 dnl Check for klibc signal.

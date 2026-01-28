@@ -183,7 +183,7 @@ static int stdin_tee(void *buf, int nr)
 
 	flush_tee(buf, nr, stdin_state.pending);
 
-	err = tee(0, stdin_state.pip[1], nr, 0);
+	err = USE_TEE ? tee(0, stdin_state.pip[1], nr, 0) : -1;
 	stdin_state.pending = err;
 	return err;
 }
