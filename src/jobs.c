@@ -919,6 +919,9 @@ static void forkchild(struct job *jp, union node *n, int mode)
 	if (lvforked)
 		return;
 
+	if (!jp)
+		return;
+
 	freejob(jp);
 
 	if (issimplecmd(n, JOBSCMD->name))
