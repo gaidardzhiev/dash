@@ -331,7 +331,7 @@ static void dupredirect(union node *redir, int f)
 int sh_pipe(int pip[2], int memfd)
 {
 	if (memfd) {
-		pip[0] = memfd_create("dash", 0);
+		pip[0] = USE_MEMFD_CREATE ? memfd_create("dash", 0) : -1;
 		if (pip[0] >= 0) {
 			pip[1] = sh_dup2(pip[0], -1, pip[0]);
 			return 1;
