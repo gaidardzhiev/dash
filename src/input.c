@@ -384,6 +384,7 @@ eof:
 
 again:
 		nr = q - parsefile->nextc;
+		input_set_lleft(parsefile, nr);
 		more = preadfd();
 		q = parsefile->nextc + nr;
 		if (more <= 0) {
