@@ -2128,7 +2128,8 @@ _rmescapes(char *str, int flag)
 				tail = 0;
 			}
 
-			q = mempcpy(q, p, ml);
+			memmove(q, p, ml);
+			q += ml;
 			p += ml + tail;
 			goto setnesc;
 		}
