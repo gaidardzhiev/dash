@@ -274,7 +274,10 @@ umaskcmd(int argc, char **argv)
 					}
 				if (!positions)
 					positions = 0111; /* default is a */
-				if (!strchr("=+-", op = *ap))
+				op = *ap;
+				if (!op)
+					goto error;
+				if (!strchr("=+-", op))
 					break;
 				ap++;
 				new_val = 0;
@@ -314,6 +317,7 @@ umaskcmd(int argc, char **argv)
 					break;
 			}
 			if (*ap) {
+error:
 				sh_error("Illegal mode: %s", *argptr);
 				return 1;
 			}
