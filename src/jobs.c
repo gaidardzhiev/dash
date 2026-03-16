@@ -1237,6 +1237,8 @@ stoppedjobs(void)
 	int retval;
 
 	retval = 0;
+	if (!JOBS)
+		goto out;
 	if (job_warning)
 		goto out;
 	jp = curjob;
