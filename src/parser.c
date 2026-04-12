@@ -442,7 +442,7 @@ next_case:
 			cp->type = NCLIST;
 			app = &cp->nclist.pattern;
 			for (;;) {
-				if (lasttoken != TWORD)
+				if (lasttoken < TWORD)
 					synexpect(TWORD);
 				*app = ap = (union node *)stalloc(sizeof (struct narg));
 				ap->type = NARG;
