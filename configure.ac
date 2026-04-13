@@ -135,6 +135,10 @@ if test "$use_fnmatch" = yes && test "$enable_glob" = yes; then
 fi
 
 if test "$enable_tee" != no; then
+	AC_CHECK_FUNCS(tee, use_tee=yes)
+fi
+
+if test "$use_tee" = yes; then
 	AC_DEFINE([USE_TEE], [1], [Non-zero if tee(2) should be used])
 else
 	AC_DEFINE([USE_TEE], [0], [Non-zero if tee(2) should be used])

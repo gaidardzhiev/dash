@@ -183,7 +183,12 @@ static int stdin_tee(void *buf, int nr)
 
 	flush_tee(buf, nr, stdin_state.pending);
 
-	err = USE_TEE ? tee(0, stdin_state.pip[1], nr, 0) : -1;
+	if (USE_TEE)
+		err = tee(0, stdin_state.pip[1], nr, 0);
+	else {
+		errno = EINVAL;
+		err = -1;
+	}
 	stdin_state.pending = err;
 	return err;
 }
@@ -324,13 +329,13 @@ retry:
 	if (!fd && !stdin_bufferable()) {
 		nr = stdin_tee(buf, nr);
 		fd = stdin_state.pip[0];
-		if (nr <= 0) {
+		if (nr < 0 && errno == EINVAL) {
 			fd = 0;
 			nr = 1;
 		}
 	}
 
-	if (nr >= 0)
+	if (nr > 0)
 		nr = read(fd, buf, nr);
 
 	if (nr < 0) {
