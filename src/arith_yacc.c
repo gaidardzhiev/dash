@@ -98,8 +98,8 @@ static intmax_t do_binop(int op, intmax_t a, intmax_t b)
 	default:
 	case ARITH_REM:
 	case ARITH_DIV:
-		if (!b)
-			yyerror("division by zero");
+		if (!b || (a == INTMAX_MIN && b == -1))
+			yyerror("division error");
 		return op == ARITH_REM ? a % b : a / b;
 	case ARITH_MUL:
 		return a * b;
