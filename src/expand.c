@@ -379,7 +379,8 @@ addquote:
 			if (c == CTLESC)
 				startloc += ml;
 			p += mb & 0xff;
-			expdest = stnputs(p, ml, expdest);
+			if (!(flag & EXP_DISCARD))
+				expdest = stnputs(p, ml, expdest);
 			p += mb >> 8;
 			break;
 		case CTLESC:
