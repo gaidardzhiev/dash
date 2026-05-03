@@ -64,11 +64,10 @@
 
 MKINIT
 struct stdin_state {
-	tcflag_t canon;
 	off_t seekable;
-	struct termios tios;
 	int pip[2];
 	int pending;
+	tcflag_t bufferable;
 };
 
 MKINIT struct parsefile basepf;	/* top level input file */
@@ -133,12 +132,17 @@ POSTEXITRESET {
 void input_init(void)
 {
 	struct stdin_state *st = &stdin_state;
+	struct termios tios;
 	int istty;
 
-	istty = tcgetattr(0, &st->tios) + 1;
-	st->seekable = istty ? 0 : lseek(0, 0, SEEK_CUR) + 1;
-	st->canon = istty ? st->tios.c_lflag & ICANON : 0;
+	istty = tcgetattr(0, &tios) + 1;
 	stdin_istty = istty;
+	if (istty)
+		st->bufferable = tios.c_lflag & ICANON;
+	else {
+		st->seekable = lseek(0, 0, SEEK_CUR) + 1;
+		st->bufferable = !!st->seekable;
+	}
 }
 
 static bool stdin_bufferable(void)
@@ -148,7 +152,7 @@ static bool stdin_bufferable(void)
 	if (stdin_istty < 0)
 		input_init();
 
-	return st->canon || st->seekable;
+	return st->bufferable;
 }
 
 static void flush_tee(void *buf, int nr, int pending)
