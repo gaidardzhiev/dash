@@ -166,13 +166,8 @@ static int stdin_tee(void *buf, int nr)
 {
 	int err;
 
-	if (stdin_istty)
-		return 0;
-
 	if (!stdin_state.pip[0]) {
-		err = pipe(stdin_state.pip);
-		if (err < 0)
-			return err;
+		sh_pipe(stdin_state.pip, 0);
 		if (stdin_state.pip[0] < 10)
 			stdin_state.pip[0] = savefd(stdin_state.pip[0],
 						    stdin_state.pip[0]);
@@ -276,6 +271,7 @@ preadfd(void)
 {
 	char *buf = parsefile->buf;
 	int fd = parsefile->fd;
+	bool use_tee;
 	int unget;
 	int pnr;
 	int nr;
@@ -294,6 +290,12 @@ preadfd(void)
 	nr = BUFSIZ - nr;
 	if (!IS_DEFINED_SMALL && !nr)
 		return nr;
+
+	use_tee = likely(!fd) &&
+#ifndef SMALL
+		  !el &&
+#endif
+		  !stdin_bufferable();
 
 	pnr = nr;
 retry:
@@ -326,12 +328,13 @@ retry:
 	}
 #endif
 
-	if (!fd && !stdin_bufferable()) {
+	if (likely(use_tee)) {
 		nr = stdin_tee(buf, nr);
-		fd = stdin_state.pip[0];
-		if (nr < 0 && errno == EINVAL) {
-			fd = 0;
-			nr = 1;
+		if (nr >= 0)
+			fd = stdin_state.pip[0];
+		else if (errno == EINVAL) {
+			use_tee = false;
+			nr = pnr = 1;
 		}
 	}
 
