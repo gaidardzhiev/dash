@@ -998,9 +998,13 @@ static char *dollarsq_escape(char *out)
 STATIC int
 readtoken1(int firstc, char const *syntax, char *eofmark, int striptabs)
 {
-	struct synstack synbase = { .syntax = syntax };
+	struct synstack synbase = {
+		.dblquote = syntax == DQSYNTAX,
+		.syntax = syntax,
+	};
 	int chkeofmark = checkkwd & CHKEOFMARK;
 	struct synstack *synstack = &synbase;
+	bool sqheredoc = syntax == SQSYNTAX;
 	struct nodelist *bqlist = NULL;
 	int dollarsq = 0;
 	int c = firstc;
@@ -1008,9 +1012,6 @@ readtoken1(int firstc, char const *syntax, char *eofmark, int striptabs)
 	int oldstyle;
 	size_t len;
 	char *out;
-
-	if (syntax == DQSYNTAX)
-		synstack->dblquote = 1;
 
 	STARTSTACKSTR(out);
 	loop: {	/* for each line, until end of word */
@@ -1035,7 +1036,8 @@ readtoken1(int firstc, char const *syntax, char *eofmark, int striptabs)
 				      out);
 			fieldsplitting = synstack->syntax == BASESYNTAX &&
 					 !synstack->varnest ? 4 : 0;
-			ml = getmbc(c, out, fieldsplitting);
+			ml = getmbc(c, out, fieldsplitting |
+					    (sqheredoc ? 2 : 0));
 			if (ml == 1) {
 				if (out == stackblock())
 					return TBLANK;
