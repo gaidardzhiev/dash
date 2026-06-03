@@ -1003,7 +1003,7 @@ struct job *vforkexec(union node *n, char **argv, const char *path, int idx)
 
 	if (!pid) {
 		forkchild(jp, n, FORK_FG);
-		shellexec(argv, path, idx);
+		shellexec(argv, path, idx, NULL);
 		/* NOTREACHED */
 	}
 

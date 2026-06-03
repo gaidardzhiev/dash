@@ -106,23 +106,39 @@ STATIC int describe_command(struct output *, char *, const char *, int);
  */
 
 void
-shellexec(char **argv, const char *path, int idx)
+shellexec(char **argv, const char *path, int idx, const char *argv0)
 {
 	char *cmdname;
+	char *realname;
 	int e;
 	char **envp;
 	int exerrno;
 
+	/*
+	 * argv0 is a non-standard exec -a override (bash/ksh extension):
+	 * the string to use as argv[0] of the executed program.
+	 * When NULL (all callers except exec -a), behaviour is identical
+	 * to before.  The real command name is kept in realname for
+	 * path search and error messages;  argv[0] is temporarily swapped
+	 * to argv0 just before execve so the process sees the override.
+	 */
+	realname = argv[0];
 	envp = environment();
 	if (strchr(argv[0], '/') != NULL) {
-		tryexec(argv[0], argv, envp);
+		if (argv0)
+			argv[0] = (char *)argv0;
+		tryexec(realname, argv, envp);
+		argv[0] = realname;
 		e = errno;
 	} else {
 		e = ENOENT;
-		while (padvance(&path, argv[0]) >= 0) {
+		while (padvance(&path, realname) >= 0) {
 			cmdname = stackblock();
 			if (--idx < 0 && pathopt == NULL) {
+				if (argv0)
+					argv[0] = (char *)argv0;
 				tryexec(cmdname, argv, envp);
+				argv[0] = realname;
 				if (errno != ENOENT && errno != ENOTDIR)
 					e = errno;
 			}
@@ -143,8 +159,8 @@ shellexec(char **argv, const char *path, int idx)
 	}
 	exitstatus = exerrno;
 	TRACE(("shellexec failed for %s, errno %d, suppressint %d\n",
-		argv[0], e, suppressint ));
-	exerror(EXEND, "%s: %s", argv[0], errmsg(e, E_EXEC));
+		realname, e, suppressint));
+	exerror(EXEND, "%s: %s", realname, errmsg(e, E_EXEC));
 	/* NOTREACHED */
 }
 

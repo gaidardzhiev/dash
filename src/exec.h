@@ -64,7 +64,7 @@ extern const char *pathopt;	/* set by padvance */
 
 struct stat64;
 
-void shellexec(char **, const char *, int)
+void shellexec(char **, const char *, int, const char *)
     __attribute__((__noreturn__));
 int padvance_magic(const char **path, const char *name, int magic);
 int hashcmd(int, char **);

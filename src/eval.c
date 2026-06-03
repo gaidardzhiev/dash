@@ -916,7 +916,7 @@ bail:
 			jp = vforkexec(cmd, argv, path, cmdentry.u.index);
 			break;
 		}
-		shellexec(argv, path, cmdentry.u.index);
+		shellexec(argv, path, cmdentry.u.index, NULL);
 		/* NOTREACHED */
 
 	case CMDBUILTIN:
@@ -1141,12 +1141,20 @@ truecmd(int argc, char **argv)
 int
 execcmd(int argc, char **argv)
 {
-	if (argc > 1) {
+	const char *argv0 = NULL;
+	int c;
+
+	while ((c = nextopt("a:")) != '\0') {
+		if (c == 'a')
+			argv0 = optionarg;
+	}
+
+	if (*argptr) {
 		iflag = 0;		/* exit on error */
 		mflag = 0;
 		optschanged();
 		flush_input();
-		shellexec(argv + 1, pathval(), 0);
+		shellexec(argptr, pathval(), 0, argv0);
 	}
 	return 0;
 }
